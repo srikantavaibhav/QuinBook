@@ -5,11 +5,21 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
+    isLogin: true
+  },
+  getters: {
+    login (state) {
+      return state.isLogin
+    }
   },
   mutations: {
+    setLogin (state, value) {
+      state.isLogin = value
+    }
   },
   actions: {
-  },
-  modules: {
+    setLoginAction ({ commit }, value) {
+      commit('setLogin', value)
+    }
   }
 })
