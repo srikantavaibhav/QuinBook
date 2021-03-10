@@ -1,33 +1,42 @@
 <template>
-  <div class="container">
-    
-    <div class="title">
-      <h1>Welcome to <br/>quinbook</h1>
-    </div>
-    <div class="loginPart">
-      <h4>Login to Continue</h4>
-      <input type="text" v-model="userName" placeholder="Username" name="username" class="input-css">
-      <div class="passwordFeild">
-      <input :type="type" v-model="password" placeholder="Password" name="password" class="input-css">
-      <button @click="toggle" id="eye">
-        <i class="fa fa-eye"  v-if="icon"></i>
-        <i class="fa fa-eye-slash" v-else></i>
-      </button>
+  <div>
+    <div class="container">
+      <div class="userlogin">
+        <div class="title">
+          <img src="../assets/Quinbook.png" style="width:50%">
+          <h1 style="font-size:40px" v-anime="{targets: 'h1', translateX: 200, rotate: '1turn', backgroundColor: '',color: '#FFFFFF', duration: 8000, loop: false}">  Welcome to</h1>
+          <h1 style="font-size:80px" v-anime="{targets: 'h1', translateX: 200, rotate: '1turn', backgroundColor: '',color: '#3aed91', duration: 8000, loop: false} ">QuinBook</h1>
+
+        </div>
+        <div class="loginPart">
+          <h4>Login to Continue</h4>
+          <input type="text" v-model="userName" placeholder="Username" name="username" class="input-css">
+          <div class="passwordFeild">
+          <input :type="type" v-model="password" placeholder="Password" name="password" class="input-css">
+          <button @click="toggle" id="eye">
+            <i class="fa fa-eye"  v-if="icon"></i>
+            <i class="fa fa-eye-slash" v-else></i>
+          </button>
+          </div>
+          <button class="btn" @click="onsubmit">Login</button>
+          <hr style="width:81%;text-align:left;margin-left:25px">
+          <button v-google-signin-button="clientId" class="google-signin-button"><img id = "google" src="../assets/1004px-Google__G__Logo.svg.webp"><div id = "buttonText"> Continue with Google </div></button>
+          <h4>Not Registered Yet?<router-link to="/register" style="color:white"> Register Now!</router-link></h4>
+        </div>
       </div>
-      <button class="btn" @click="onsubmit">Login</button>
-      <hr style="width:81%;text-align:left;margin-left:25px">
-      <button v-google-signin-button="clientId" class="google-signin-button"><img id = "google" src="../assets/1004px-Google__G__Logo.svg.webp"><div id = "buttonText"> Continue with Google </div></button>
-      <h4>Not Registered Yet?<router-link to="/register"> Register Now!</router-link></h4>
-
-
     </div>
   </div>
 </template>
 
-<script scoped>
+<script>
 import { mapActions } from 'vuex'
 import axios from 'axios'
 import GoogleSignInButton from 'vue-google-signin-button-directive'
+import VueAnime from 'vue-animejs'
+import Vue from 'vue'
+
+
+Vue.use(VueAnime)
 
 export default {
   
@@ -54,7 +63,7 @@ export default {
       if(idToken !== null){
       this.onGoogleLogin(idToken)
      } else{
-       alert('Google Sign-In was not succesful. Try again!')
+       this.$alert('Google Sign-In was not succesful. Try again!')
      }
     },
     OnGoogleAuthFail (error) {
@@ -68,11 +77,11 @@ export default {
    
     validate () {
       if (this.userName === '') {
-        alert('Please enter username!')
+        this.$alert('Please enter username!')
         return false
       }
       if (this.password === '') {
-        alert('Please enter password!')
+        this.$alert('Please enter password!')
         return false
       }
       return true
@@ -85,20 +94,23 @@ export default {
         password: this.password
       }
       if (this.validate()) {
-        axios.post('http://', obj).then((res) => {
+         console.log("dsdss")
+        axios.post('http://10.177.68.66:8082/login', obj).then((res) => {
+          console.log("dsdss")
           localStorage.setItem('sessionID', res.data.sessionID) // check sessionID or sessionId
           this.$store.dispatch('setLoginAction', res.data.sessionID)
-          if (res.data.sessionID === '' && res.data.isRegistered === 'true') {
-            alert('Invalid Login Credentials!')
+          if (res.data.sessionID === '' && res.data.isRegistered === true) {
+            this.$alert('Invalid Login Credentials!')
             localStorage.removeItem('sessionID') 
-            this.$router.push('/login')
+            this.$router.push('/login').catch(()=>{console.log('exception')})
           }
-          if (res.data.sessionID === '' && res.data.isRegistered === 'false') {
-            alert('Not a registered user. Please register!')
+          if (res.data.sessionID === '' && res.data.isRegistered === false) {
+            this.$alert('Not a registered user. Please register!')
             localStorage.removeItem('sessionID')
             this.$router.push('/register')
           }
-          if (this.$route.query.routeto === 'home') {
+          if (res.data.sessionID !== '' && res.data.isRegistered === true) {
+            console.log('inThis')
             this.$router.push('/home')
           } else {
             this.$router.push('/login')
@@ -114,21 +126,22 @@ export default {
         userName: '',
         password: ''
       }
-        axios.post('http://', obj).then((res) => {
+      console.log('inside onGoogleLogin')
+        axios.post('http://10.177.68.66:8082/login', obj).then((res) => {
           localStorage.setItem('sessionID', res.data.sessionID)
           this.$store.dispatch('setLoginAction', res.data.sessionID) // check store, whether to set true or sessionId
-          if (res.data.sessionID === '' && res.data.isRegistered === 'true') {
+          if (res.data.sessionID === '' && res.data.isRegistered === true) {
             alert('Invalid Login Credentials!')
             localStorage.removeItem('sessionID') 
-            this.$router.push('/login')
+            this.$router.push('/login').catch(()=>{})
           }
-          if (res.data.sessionID === '' && res.data.isRegistered === 'false') {
+          if (res.data.sessionID === '' && res.data.isRegistered === false) {
             alert('Not a registered user. Please register!')
             localStorage.removeItem('sessionID')
             this.$router.push('/register')
           }
           // if sessionId and isRegister exits
-          if (this.$route.query.routeto === 'home') {
+          if (res.data.sessionID !== '' && res.data.isRegistered === true) {
             this.$router.push('/home')
           } else {
             this.$router.push('/login')
@@ -146,24 +159,24 @@ export default {
 }
 </script>
 
-<style >
+<style scoped>
 
-  .container {
+  .userlogin {
     display: flex;
+    justify-content: space-evenly;
   }
 
   .title {
-    /* flex: 0 0 auto; */
-    margin-left: 25%;
-    margin-top: 20%;
+    width: 30%;
+    margin: 188px;
   }
 
   .loginPart {
-    /* flex: 0 0 auto; */
-    border: 1px solid black;
-    padding: 0px 60px 2px;
-    margin-left: 20%;
-    margin-top: 12%;
+    margin: 200px 150px 179px;
+    border: 0.5px solid #bdb9b9;
+    width: 25%;
+    padding: 25px 25px 50px;
+    background-color: #21bf73d2;
   }
 
   h4 {
@@ -187,7 +200,6 @@ export default {
   .btn:focus{
     background-color: #eaecec;
     outline: none;
-
   }
 
   #google {
@@ -205,9 +217,9 @@ export default {
     margin: 10px 25px 4px;
     border: 0px;
     background-color: white;
-    -moz-box-shadow: 0 0 10px 1px gray;
-    -webkit-box-shadow: 0 0 10px 1px gray;
-    box-shadow: 0 0 10px 1px gray;    
+    -moz-box-shadow: 0 0 10px 1px black;
+    -webkit-box-shadow: 0 0 10px 1px black;
+    box-shadow: 0 0 10px 1px black;    
     border-radius: 5px;
     text-align: center;
     cursor: pointer;
@@ -228,9 +240,10 @@ export default {
     outline: none;
     border-radius: 5px;
     border: 0px;
-    -moz-box-shadow: 0 0 10px 1px gray;
-    -webkit-box-shadow: 0 0 10px 1px gray;
-    box-shadow: 0 0 10px 1px gray;
+    -moz-box-shadow: 0 0 10px 1px black;
+    -webkit-box-shadow: 0 0 10px 1px black;
+    box-shadow: 0 0 10px 1px black;
+    overflow: scroll;
   }
 
   .input-css:focus{
@@ -245,12 +258,12 @@ export default {
 
   .passwordFeild {
     display: flex;
-
   }
 
   #eye {
     margin: 0px 2px 19px;
     float: right;
+    cursor: pointer;
   }
 
 </style>  
